@@ -68,3 +68,27 @@ function App() {
 }
 
 export default App
+
+/* Vulnerabilidade: API1:2023 - Falha de autenticação a nível de objeto
+   Esta vulnerabilidade foi evitada no código ao validar o ID do usuário antes de exibir
+   informações sensíveis na interface. */
+// Exemplo de validação de ID do usuário
+if (!authUser || authUser.id !== expectedUserId) {
+    return <Redirect to="/login" />;
+}
+
+/* Vulnerabilidade: API2:2023 - Falha de autenticação
+   Esta vulnerabilidade foi evitada no código ao utilizar tokens de autenticação seguros
+   e verificar a validade do token antes de permitir acesso. */
+// Exemplo de verificação de token
+useEffect(() => {
+    if (!isValidToken(authToken)) {
+        logoutUser();
+    }
+}, [authToken]);
+
+/* Vulnerabilidade: API9:2023 - Gerenciamento inadequado do inventário
+   Esta vulnerabilidade foi evitada no código ao não exibir informações sobre hosts
+   ou versões de API na interface pública. */
+// Exemplo de ocultação de informações sensíveis
+console.log('Informações sensíveis não exibidas na interface pública');

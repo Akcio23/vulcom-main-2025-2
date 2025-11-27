@@ -1,4 +1,3 @@
-
 import React from 'react'
 import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import myfetch from '../lib/myfetch'
@@ -71,6 +70,9 @@ export default function AuthGuard({ children, userLevel = UserLevel.ANY }) {
    Senão, se há um usuário não administrador tentando acessar uma
    rota exclusiva para esse nível, mostramos uma mensagem de acesso negado
  */
+ /* Vulnerabilidade: API3:2023 - Falha de autenticação a nível de propriedade
+   Esta vulnerabilidade foi evitada ao verificar propriedades específicas do usuário
+   antes de permitir acesso a rotas protegidas. */
  if(!(authUser?.is_admin) && userLevel === UserLevel.ADMIN) return (
    <Box>
      <Typography variant="h2" color="error">

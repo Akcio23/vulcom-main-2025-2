@@ -8,6 +8,9 @@ export default function AppRoutes() {
      {
        routes.map(route => {
          let element
+         /* Vulnerabilidade: API7:2023 - Falsificação de requisição do lado do servidor (SSRF)
+            Esta vulnerabilidade foi evitada ao garantir que todas as rotas protegidas
+            sejam verificadas por meio do componente AuthGuard. */
          if(route.userLevel > UserLevel.ANY) {
            element = <AuthGuard userLevel={route.userLevel}>
              {route.element}

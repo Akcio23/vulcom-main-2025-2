@@ -30,29 +30,27 @@ controller.create = async function(req, res) {
   }
 }
 
+/* Vulnerabilidade: API4:2023 - Consumo inseguro de recursos
+   Esta vulnerabilidade foi evitada ao limitar o número de registros retornados
+   em consultas e ao implementar paginação. */
 controller.retrieveAll = async function(req, res) {
   try {
-
-    // Somente usuários administradores podem acessar este recurso
-    // HTTP 403: Forbidden(
     if(! req?.authUser?.is_admin) return res.status(403).end()
 
     const result = await prisma.user.findMany({
+      take: 100, // Limita a consulta a 100 registros
+      skip: req.query.page ? (req.query.page - 1) * 100 : 0, // Implementa paginação
       select: {
         id: true,
         username: true,
         email: true,
-        //  todos os outros campos EXCETO password
       }
     })
 
-    // HTTP 200: OK (implícito)
     res.send(result)
   }
   catch(error) {
     console.error(error)
-
-    // HTTP 500: Internal Server Error
     res.status(500).end()
   }
 }
@@ -89,15 +87,16 @@ controller.retrieveOne = async function(req, res) {
   }
 }
 
+/* Vulnerabilidade: API5:2023 - Falha de autenticação a nível de função
+   Esta vulnerabilidade foi evitada ao verificar permissões específicas
+   antes de executar ações sensíveis. */
 controller.update = async function(req, res) {
   try {
 
    // Somente usuários administradores podem acessar este recurso
     // HTTP 403: Forbidden(
-      if(! req?.authUser?.is_admin) return res.status(403).end()
+    if(! req?.authUser?.is_admin) return res.status(403).end()
 
-
-    // Se houver senha no req.body, faz o hash antes de atualizar
     if(req.body.password) {
       req.body.password = await bcrypt.hash(req.body.password, 12)
     }
@@ -109,47 +108,37 @@ controller.update = async function(req, res) {
         id: true,
         username: true,
         email: true,
-        // outros campos exceto password
       }
     })
 
-    // Encontrou e atualizou ~> HTTP 204: No Content
     if(result) res.status(204).end()
-    // Não encontrou (e não atualizou) ~> HTTP 404: Not Found
     else res.status(404).end()
   }
   catch(error) {
     console.error(error)
-
-    // HTTP 500: Internal Server Error
     res.status(500).end()
   }
 }
 
+/* Vulnerabilidade: API6:2023 - Acesso irrestrito a fluxos de negócios sensíveis
+   Esta vulnerabilidade foi evitada ao restringir o acesso a endpoints
+   sensíveis apenas para usuários autenticados e administradores. */
 controller.delete = async function(req, res) {
   try {
-
-      // Somente usuários administradores podem acessar este recurso
-    // HTTP 403: Forbidden(
-      if(! req?.authUser?.is_admin) return res.status(403).end()
+    if(! req?.authUser?.is_admin) return res.status(403).end()
 
     await prisma.user.delete({
       where: { id: Number(req.params.id) }
     })
 
-    // Encontrou e excluiu ~> HTTP 204: No Content
     res.status(204).end()
   }
   catch(error) {
     if(error?.code === 'P2025') {
-      // Não encontrou e não excluiu ~> HTTP 404: Not Found
       res.status(404).end()
     }
     else {
-      // Outros tipos de erro
       console.error(error)
-
-      // HTTP 500: Internal Server Error
       res.status(500).end()
     }
   }

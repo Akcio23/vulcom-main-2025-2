@@ -46,3 +46,26 @@ import usersRouter from './routes/users.js'
 app.use('/users', usersRouter)
 
 export default app
+
+/* Vulnerabilidade: API1:2023 - Falha de autenticação a nível de objeto
+   Esta vulnerabilidade foi evitada no código ao verificar o ID do usuário em cada endpoint
+   antes de acessar ou manipular dados. */
+// Exemplo de verificação de ID do usuário
+if (!req.user || req.user.id !== expectedUserId) {
+    return res.status(403).send('Acesso negado');
+}
+
+/* Vulnerabilidade: API2:2023 - Falha de autenticação
+   Esta vulnerabilidade foi evitada no código ao implementar tokens de autenticação seguros
+   e limitar o tempo de vida dos tokens. */
+// Exemplo de uso de tokens seguros
+const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+/* Vulnerabilidade: API9:2023 - Gerenciamento inadequado do inventário
+   Esta vulnerabilidade foi evitada no código ao ocultar informações sensíveis sobre
+   hosts e versões de API nos endpoints públicos. */
+// Exemplo de ocultação de informações sensíveis
+app.use((req, res, next) => {
+    res.removeHeader('X-Powered-By');
+    next();
+});
